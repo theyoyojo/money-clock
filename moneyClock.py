@@ -5,15 +5,23 @@ import math
 
 #dynamic print function
 def prn(string):
-	print string
+	print(string)
 
 #dynamic input function
 def inp(prompt):
-	return raw_input(prompt)
+	return input(prompt)
 
 #debug notifications
 def notify(string):
 	prn(string)
+
+#welcome message for basic console loop
+def getWelcomeMessage(option):
+	if option == 'basicConsole':
+		message = "=========================================================\
+\nWelcome to the Money Clock. Press Ctrl+C to save and exit.\n\
+========================================================="
+	return message
 
 #loop exit condition
 def checkForExitCondition():
@@ -35,16 +43,36 @@ def getWage():
 	else:
 		return float(wage)
 
+#display in console
+def display(money, dSeconds):
+	hours,minutes,seconds = splitTime(dSeconds)
+	prn("Money made: %.2f\tWorked: \
+%.0f Hours %.0f Minutes %.0f Seconds" % (money,hours,minutes,seconds))
+
+#get name of save file (or name file to create)
+def getSaveName():
+	name = inp("Name of save file?\n>")
+	return name
+
+def save(name, money, wage, start):
+	end = getTime()
+	hours,minutes,seconds = splitTime(end)
+	sDate = time.strftime("%A, %d %B %Y",time.localtime(start))
+	sTime = time.strftime("%I:%M:%S %p", time.localtime(start))
+	eDate = time.strftime("%A, %d %B %Y",time.localtime(end))
+	eTime = time.strftime("%I:%M:%S %p",time.localtime(end))
+	target = open(name,'a')
+	target.write("\n\
+On %s, you began working at %s.\n\
+You worked for %.0f hours, %.0f minutes, and %.0f seconds.\n\
+You made %.2f at %.2f per hour in your local currency.\n\
+You finished working on %s, at %s.\n\n----------\n"\
+% (sDate,sTime,hours,minutes,seconds,money,wage,eDate,eTime))
+	return
+
 #pretty sure this one is universal but not certain
 def getTime():
-	return time.time()
-
-#display in console
-def display (money, dSeconds):
-	hours,minutes,seconds = splitTime(dSeconds)
-	prn("Money made: %.2f\tWorked:\
-%.2f Hours %.2f Minutes %.2f Seconds" % (money,hours,minutes,seconds))
-
+	return math.floor(time.time())
 
 #[system generic functions]
 
@@ -70,7 +98,7 @@ def isFloat(flo):
 
 #Convert from one time format to another
 #Key s = seconds, m = minutes, h = hours
-def convert(time,frm,to):
+def convert(time, frm, to):
 	badUse = "Incorrect use of convert()"
 
 	#make sure inputs are in the proper format
@@ -126,7 +154,7 @@ def getDTime(start):
 	return math.floor(getTime()) - start
 
 #calculate money earned up to that point
-def calcMoney(hWage,dSeconds):
+def calcMoney(hWage, dSeconds):
 	hSeconds = convert(dSeconds,'s','h')
 	return hSeconds * hWage
 
@@ -141,27 +169,54 @@ def splitTime(sInput):
 
 	return convert(sHours,'s','h'),convert(sMinutes,'s','m'),seconds
 
-#main event loop
-def eventLoop(start,wage):
+#basic console event loop
+def basicConsoleLoop(wage, start):
+	while True:
+		try:	
+			#get elapsed time in seconds
+			dSeconds = getDTime(start)
+
+			#calculate money earned
+			money = calcMoney(wage,dSeconds)
+			
+			#update display
+			display(money,dSeconds)
+
+			#wait 1 second
+			time.sleep(1)
+
+			#repeat
+		except KeyboardInterrupt:
+			break
+	save(getSaveName(),money,wage,start)
+	return 1
+
+#main event loop (not in use, todo: detect specific exit condition, clean)
+def eventLoop(wage, start):
 	exitCondition = False
 	while exitCondition == False:
-		
-		#get elapsed time in seconds
-		dSeconds = getDTime(start)
+		try:	
+			#get elapsed time in seconds
+			dSeconds = getDTime(start)
 
-		#calculate money earned
-		money = calcMoney(wage,dSeconds)
-		
-		#update display
-		display(money,dSeconds)
+			#calculate money earned
+			money = calcMoney(wage,dSeconds)
+			
+			#update display
+			display(money,dSeconds)
 
-		#check for exit condition
-		exitCondition = checkForExitCondition()
+			#update file
 
-		#wait 1 second
-		time.sleep(1)
 
-		#repeat
+			#check for exit condition
+			exitCondition = checkForExitCondition()
+
+			#wait 1 second
+			time.sleep(1)
+
+			#repeat
+		except KeyboardInterrupt:
+			break
 	return
 
 #function to test convert()
@@ -189,9 +244,10 @@ def testLoop():
 
 #probably self explanatory
 def main():
+	print(getWelcomeMessage("basicConsole"))
 	wage = getWage()
-	start = math.floor(getTime())
-	eventLoop(start,wage)
+	start = getTime()
+	basicConsoleLoop(wage,start)
 	return 1
 
 
