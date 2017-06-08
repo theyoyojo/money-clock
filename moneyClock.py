@@ -54,9 +54,8 @@ def getSaveName():
 	name = inp("Name of save file?\n>")
 	return name
 
-def save(name, money, wage, start):
-	end = getTime()
-	hours,minutes,seconds = splitTime(end)
+def save(name, money, wage, start, end):
+	hours,minutes,seconds = splitTime(end-start)
 	sDate = time.strftime("%A, %d %B %Y",time.localtime(start))
 	sTime = time.strftime("%I:%M:%S %p", time.localtime(start))
 	eDate = time.strftime("%A, %d %B %Y",time.localtime(end))
@@ -167,7 +166,6 @@ def splitTime(sInput):
 	sMinutes = sInput - sHours - (sInput % 60)
 	seconds = sInput - sHours - sMinutes
 
-	prn("\n\n" + str(sHours) + "\n\n")
 	return convert(sHours,'s','h'),convert(sMinutes,'s','m'),seconds
 
 #basic console event loop
@@ -189,7 +187,8 @@ def basicConsoleLoop(wage, start):
 			#repeat
 		except KeyboardInterrupt:
 			break
-	save(getSaveName(),money,wage,start)
+	end = getTime()
+	save(getSaveName(),money,wage,start,end)
 	return 1
 
 #main event loop (not in use, todo: detect specific exit condition, clean)
@@ -207,7 +206,7 @@ def eventLoop(wage, start):
 			display(money,dSeconds)
 
 			#update file
-
+			#TODO?
 
 			#check for exit condition
 			exitCondition = checkForExitCondition()
@@ -255,6 +254,4 @@ def main():
 #testLoop()
 #initialization
 main()
-
-#print splitTime(6.2)
 
